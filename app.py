@@ -9,7 +9,7 @@ load_dotenv()
 
 app = Flask(__name__)
 limiter = Limiter(get_remote_address, app=app, default_limits=["20 per minute"])
-client = Anthropic()
+client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 historique = []
 
 def filtrer_donnees_sensibles(texte):
