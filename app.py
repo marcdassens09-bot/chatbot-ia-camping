@@ -1,3 +1,4 @@
+import os
 import re
 from flask import Flask, request, jsonify, render_template
 from anthropic import Anthropic
