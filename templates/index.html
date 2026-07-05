@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camping Les Eychecadous - Assistant Virtuel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f7fb; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
+        .modal { background: white; border-radius: 20px; padding: 40px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+        .modal h2 { color: #0066cc; margin-bottom: 10px; font-size: 24px; }
+        .modal p { color: #666; margin-bottom: 25px; font-size: 14px; }
+        .modal input { width: 100%; padding: 12px 18px; border: 2px solid #e0e0e0; border-radius: 25px; font-size: 15px; margin-bottom: 15px; outline: none; transition: border 0.3s; }
+        .modal input:focus { border-color: #0066cc; }
+        .modal button { width: 100%; padding: 12px; background: linear-gradient(135deg, #0066cc, #00aaff); color: white; border: none; border-radius: 25px; font-size: 16px; cursor: pointer; transition: transform 0.2s; }
+        .modal button:hover { transform: scale(1.02); }
+        .container { width: 100%; max-width: 700px; background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; height: 90vh; display: flex; flex-direction: column; }
+        .header { background: linear-gradient(135deg, #0066cc, #00aaff); padding: 20px; display: flex; align-items: center; gap: 15px; }
+        .avatar { width: 50px; height: 50px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .header-info h1 { color: white; font-size: 20px; }
+        .header-info p { color: rgba(255,255,255,0.8); font-size: 13px; }
+        .status { width: 10px; height: 10px; background: #00ff88; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .message-user { display: flex; justify-content: flex-end; }
+        .message-user span { background: linear-gradient(135deg, #0066cc, #00aaff); color: white; padding: 12px 18px; border-radius: 18px 18px 4px 18px; max-width: 70%; line-height: 1.5; }
+        .message-ia { display: flex; justify-content: flex-start; gap: 10px; align-items: flex-end; }
+        .message-ia .bot-avatar { width: 35px; height: 35px; background: linear-gradient(135deg, #0066cc, #00aaff); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+        .message-ia span { background: #f0f4ff; color: #333; padding: 12px 18px; border-radius: 18px 18px 18px 4px; max-width: 70%; line-height: 1.5; }
+        .typing { display: none; padding: 0 20px 10px; align-items: center; gap: 10px; }
+        .typing.active { display: flex; }
+        .typing-dots { background: #f0f4ff; padding: 12px 18px; border-radius: 18px; display: flex; gap: 5px; }
+        .typing-dots span { width: 8px; height: 8px; background: #0066cc; border-radius: 50%; animation: bounce 1s infinite; }
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-8px); } }
+        .input-zone { padding: 20px; border-top: 1px solid #eee; display: flex; gap: 10px; background: white; }
+        #message { flex: 1; padding: 12px 18px; border: 2px solid #e0e0e0; border-radius: 25px; font-size: 15px; outline: none; transition: border 0.3s; }
+        #message:focus { border-color: #0066cc; }
+        #envoyer { width: 50px; height: 50px; background: linear-gradient(135deg, #0066cc, #00aaff); border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+        #envoyer:hover { transform: scale(1.1); }
+        #envoyer svg { width: 20px; height: 20px; fill: white; }
+    </style>
+</head>
+<body>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <h2>⛺ Camping Les Eychecadous</h2>
+            <p>Bienvenue ! Pour mieux vous aider, pouvez-vous vous présenter ?</p>
+            <input type="text" id="nom" placeholder="Votre prénom" />
+            <input type="email" id="email" placeholder="Votre email" />
+            <button onclick="demarrerChat()">Démarrer le chat →</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div class="avatar">⛺</div>
+            <div class="header-info">
+                <h1>Assistant Camping Les Eychecadous</h1>
+                <p><span class="status"></span>En ligne - Répond instantanément</p>
+            </div>
+            <button onclick="effacerChat()" style="margin-left:auto;background:rgba(255,255,255,0.2);border:none;color:white;padding:8px 15px;border-radius:20px;cursor:pointer;font-size:13px;">🗑️ Effacer</button>
+        </div>
+        <div id="chat-box"></div>
+        <div class="typing" id="typing">
+            <div class="bot-avatar" style="width:35px;height:35px;background:linear-gradient(135deg,#0066cc,#00aaff);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;">🧹</div>
+            <div class="typing-dots"><span></span><span></span><span></span></div>
+        </div>
+        <div style="padding:10px 20px;background:white;text-align:center;"><a href="mailto:mpsolutionsia@gmail.com" style="color:#0066cc;font-size:13px;text-decoration:none;">✉️ Contacter un conseiller</a></div>
+        <div class="input-zone">
+            <input type="text" id="message" placeholder="Écrivez votre message..." />
+            <button id="envoyer">
+                <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let nomUtilisateur = "";
+
+        function questionRapide(texte) {
+            document.getElementById("message").value = texte;
+            envoyer();
+        }
+        function demarrerChat() {
+            const nom = document.getElementById("nom").value.trim();
+            const email = document.getElementById("email").value.trim();
+            if (!nom || !email) { alert("Merci de remplir votre prénom et email !"); return; }
+            nomUtilisateur = nom;
+            document.getElementById("modal").style.display = "none";
+            ajouterMessage(`Bonjour ${nom} ! Je suis l'assistant virtuel de <strong>Camping Les Eychecadous</strong>. Comment puis-je vous aider aujourd'hui ? 😊`, "ia");
+            ajouterMessage("🔒 Vos données (prénom, email) sont utilisées uniquement pour répondre à votre demande et ne sont jamais transmises à des tiers.", "ia");
+            document.getElementById("chat-box").insertAdjacentHTML("beforeend", '<div style="display:flex;flex-wrap:wrap;gap:8px;padding:10px 20px;"><button onclick="questionRapide(&quot;Quels sont vos tarifs ?&quot;)" style="background:#f0f4ff;border:1px solid #0066cc;color:#0066cc;padding:8px 14px;border-radius:20px;cursor:pointer;font-size:13px;">Quels sont vos tarifs ?</button><button onclick="questionRapide(&quot;Acceptez-vous les animaux ?&quot;)" style="background:#f0f4ff;border:1px solid #0066cc;color:#0066cc;padding:8px 14px;border-radius:20px;cursor:pointer;font-size:13px;">Acceptez-vous les animaux ?</button><button onclick="questionRapide(&quot;Quels hebergements avez-vous ?&quot;)" style="background:#f0f4ff;border:1px solid #0066cc;color:#0066cc;padding:8px 14px;border-radius:20px;cursor:pointer;font-size:13px;">Quels hebergements avez-vous ?</button></div>');
+        }
+
+        document.getElementById("envoyer").addEventListener("click", envoyer);
+        document.getElementById("message").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") envoyer();
+        });
+
+        async function envoyer() {
+            const input = document.getElementById("message");
+            const texte = input.value.trim();
+            if (!texte) return;
+            ajouterMessage(texte, "user");
+            input.value = "";
+            document.getElementById("typing").classList.add("active");
+            const reponse = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: texte, nom: nomUtilisateur })
+            });
+            document.getElementById("typing").classList.remove("active");
+            const data = await reponse.json();
+            ajouterMessage(data.reponse, "ia");
+        }
+
+        async function effacerChat() {
+            await fetch("/effacer", { method: "POST" });
+            document.getElementById("chat-box").innerHTML = "";
+            ajouterMessage(`Bonjour ${nomUtilisateur} ! Comment puis-je vous aider ? 😊`, "ia");
+        }
+
+        function ajouterMessage(texte, qui) {
+            const box = document.getElementById("chat-box");
+            const div = document.createElement("div");
+            div.className = `message-${qui}`;
+            if (qui === "ia") {
+                div.innerHTML = `<div class="bot-avatar" style="width:35px;height:35px;background:linear-gradient(135deg,#0066cc,#00aaff);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;">🧹</div><span>${texte}</span>`;
+            } else {
+                div.innerHTML = `<span>${texte}</span>`;
+            }
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+    </script>
+</body>
+</html>
