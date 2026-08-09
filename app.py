@@ -38,8 +38,9 @@ def chat():
     })
     try:
         reponse = client.messages.create(
-            model="claude-sonnet-4-6",
+            model="claude-sonnet-5",
             max_tokens=500,
+            thinking={"type": "disabled"},
             system="""REGLES ABSOLUES - A RESPECTER SANS EXCEPTION :
 1. DRAPS ET LINGE : aucun drap, linge, serviette ni literie n est fourni pour AUCUN hebergement. Ni emplacements, ni mobil-homes, ni bungalows. Reponse obligatoire : "Aucun linge n est fourni, pensez a apporter votre literie."
 2. EMAIL : toujours campingartigat@gmail.com - jamais hotmail
