@@ -15,10 +15,30 @@ def filtrer_donnees_sensibles(texte):
     texte = re.sub(r'\b0[1-9](\s?\d{2}){4}\b', '[TELEPHONE MASQUE]', texte)
     texte = re.sub(r'\b(?:\d[ -]?){13,16}\b', '[CARTE MASQUEE]', texte)
     return texte
+def purger_log_ancien(chemin, jours=30):
+    from datetime import datetime, timedelta
+    limite = datetime.now() - timedelta(days=jours)
+    try:
+        with open(chemin, "r", encoding="utf-8") as f:
+            lignes = f.readlines()
+    except FileNotFoundError:
+        return
+    conservees = []
+    for ligne in lignes:
+        try:
+            horodatage = datetime.strptime(ligne[:16], "%Y-%m-%d %H:%M")
+            if horodatage >= limite:
+                conservees.append(ligne)
+        except ValueError:
+            conservees.append(ligne)
+    with open(chemin, "w", encoding="utf-8") as f:
+        f.writelines(conservees)
+
 def enregistrer_question(question):
     from datetime import datetime
     horodatage = datetime.now().strftime("%Y-%m-%d %H:%M")
     question_propre = filtrer_donnees_sensibles(question)
+    purger_log_ancien("questions_log.txt")
     with open("questions_log.txt", "a", encoding="utf-8") as f:
         f.write(f"{horodatage} | {question_propre}\n")
 @app.route("/")
