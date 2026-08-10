@@ -91,7 +91,7 @@
             nomUtilisateur = nom;
             document.getElementById("modal").style.display = "none";
             ajouterMessage(`Bonjour ${nom} ! Je suis l'assistant virtuel de <strong>Camping Les Eychecadous</strong>. Comment puis-je vous aider aujourd'hui ? 😊`, "ia");
-            ajouterMessage("🔒 Vos données (prénom, email) sont utilisées uniquement pour répondre à votre demande et ne sont jamais transmises à des tiers.", "ia");
+            ajouterMessage("🔒 Prénom et email ne sont jamais transmis à des tiers. Vos questions peuvent être conservées, emails et téléphones masqués, pour améliorer le service.", "ia");
             document.getElementById("chat-box").insertAdjacentHTML("beforeend", '<div style="display:flex;flex-wrap:wrap;gap:8px;padding:10px 20px;"><button onclick="questionRapide(&quot;Quels sont vos tarifs ?&quot;)" style="background:#f0f4ff;border:1px solid #0066cc;color:#0066cc;padding:8px 14px;border-radius:20px;cursor:pointer;font-size:13px;">Quels sont vos tarifs ?</button><button onclick="questionRapide(&quot;Acceptez-vous les animaux ?&quot;)" style="background:#f0f4ff;border:1px solid #0066cc;color:#0066cc;padding:8px 14px;border-radius:20px;cursor:pointer;font-size:13px;">Acceptez-vous les animaux ?</button><button onclick="questionRapide(&quot;Quels hebergements avez-vous ?&quot;)" style="background:#f0f4ff;border:1px solid #0066cc;color:#0066cc;padding:8px 14px;border-radius:20px;cursor:pointer;font-size:13px;">Quels hebergements avez-vous ?</button></div>');
         }
 
